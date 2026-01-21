@@ -22,7 +22,7 @@ sprints:
     end_date: null
     capacity_points: 32
     committed_points: 32
-    completed_points: 6
+    completed_points: 9
     status: "in_progress"
     stories:
       - story_id: "STORY-000"
@@ -47,8 +47,9 @@ sprints:
         epic: "Infrastructure"
         points: 3
         priority: "must_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-21"
         dependencies: ["STORY-000"]
       - story_id: "STORY-003"
         title: "Écran Home avec affichage du digest"
@@ -170,6 +171,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 2
-  completed_points: 6
-  remaining_points: 41
+  completed_stories: 3
+  completed_points: 9
+  remaining_points: 38
