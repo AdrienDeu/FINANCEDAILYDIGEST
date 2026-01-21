@@ -1,0 +1,173 @@
+# BMAD Sprint Status
+# Project: Finance Daily Digest
+# Generated: 2026-01-21
+
+version: "6.0.0"
+project_name: "Finance Daily Digest"
+project_level: 2
+current_sprint: 1
+sprint_plan_path: "docs/sprint-plan-finance-daily-digest-2026-01-21.md"
+
+team:
+  size: 1
+  experience_level: "beginner"
+  sprint_length_weeks: 1
+  capacity_per_week: 5
+
+sprints:
+  - sprint_number: 1
+    name: "MVP"
+    goal: "Livrer un MVP fonctionnel avec digest, actualités vulgarisées et suggestions IA"
+    start_date: "2026-01-21"
+    end_date: null
+    capacity_points: 32
+    committed_points: 32
+    completed_points: 0
+    status: "not_started"
+    stories:
+      - story_id: "STORY-000"
+        title: "Setup projet Flutter + architecture"
+        epic: "Infrastructure"
+        points: 3
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+      - story_id: "STORY-001"
+        title: "Configuration APIs (Yahoo Finance + OpenRouter)"
+        epic: "Infrastructure"
+        points: 3
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-000"]
+      - story_id: "STORY-002"
+        title: "Setup cache local Hive"
+        epic: "Infrastructure"
+        points: 3
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-000"]
+      - story_id: "STORY-003"
+        title: "Écran Home avec affichage du digest"
+        epic: "EPIC-001"
+        points: 5
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-000", "STORY-001", "STORY-002"]
+      - story_id: "STORY-004"
+        title: "Récupération et génération auto du digest"
+        epic: "EPIC-001"
+        points: 5
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-001", "STORY-002"]
+      - story_id: "STORY-005"
+        title: "Écran liste des actualités"
+        epic: "EPIC-002"
+        points: 3
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-001", "STORY-002"]
+      - story_id: "STORY-008"
+        title: "Intégration OpenRouter pour vulgarisation"
+        epic: "EPIC-003"
+        points: 5
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-001", "STORY-002"]
+      - story_id: "STORY-011"
+        title: "Génération suggestions via IA"
+        epic: "EPIC-004"
+        points: 5
+        priority: "must_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-001", "STORY-002", "STORY-004"]
+
+  - sprint_number: 2
+    name: "Améliorations UX"
+    goal: "Améliorer l'expérience utilisateur avec détail articles, refresh et sources"
+    start_date: null
+    end_date: null
+    capacity_points: 10
+    committed_points: 10
+    completed_points: 0
+    status: "planned"
+    stories:
+      - story_id: "STORY-009"
+        title: "Écran détail article vulgarisé"
+        epic: "EPIC-003"
+        points: 3
+        priority: "should_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-008"]
+      - story_id: "STORY-012"
+        title: "Affichage suggestions sur Home"
+        epic: "EPIC-004"
+        points: 3
+        priority: "should_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-011", "STORY-003"]
+      - story_id: "STORY-006"
+        title: "Pull-to-refresh du flux"
+        epic: "EPIC-002"
+        points: 2
+        priority: "should_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-005"]
+      - story_id: "STORY-010"
+        title: "Accès à l'article original"
+        epic: "EPIC-003"
+        points: 2
+        priority: "should_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-009"]
+
+  - sprint_number: 3
+    name: "Polish"
+    goal: "Finaliser avec filtrage et explications détaillées"
+    start_date: null
+    end_date: null
+    capacity_points: 5
+    committed_points: 5
+    completed_points: 0
+    status: "planned"
+    stories:
+      - story_id: "STORY-007"
+        title: "Filtrage par catégorie"
+        epic: "EPIC-002"
+        points: 3
+        priority: "could_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-005"]
+      - story_id: "STORY-013"
+        title: "Explication du pourquoi des suggestions"
+        epic: "EPIC-004"
+        points: 2
+        priority: "should_have"
+        status: "not_started"
+        assigned_to: "deu"
+        dependencies: ["STORY-012"]
+
+velocity:
+  sprint_1: null
+  sprint_2: null
+  sprint_3: null
+  rolling_average: null
+
+metrics:
+  total_stories: 14
+  total_points: 47
+  completed_stories: 0
+  completed_points: 0
+  remaining_points: 47
