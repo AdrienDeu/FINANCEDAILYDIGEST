@@ -9,7 +9,7 @@ class SecureStorageService {
   }) : _storage = storage ?? const FlutterSecureStorage();
 
   // Storage keys
-  static const String _openRouterApiKeyKey = 'openrouter_api_key';
+  static const String _openRouterApiKeyKey = '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';
 
   /// Save OpenRouter API key securely
   Future<void> saveOpenRouterApiKey(String apiKey) async {
