@@ -22,7 +22,7 @@ sprints:
     end_date: null
     capacity_points: 32
     committed_points: 32
-    completed_points: 9
+    completed_points: 22
     status: "in_progress"
     stories:
       - story_id: "STORY-000"
@@ -56,24 +56,27 @@ sprints:
         epic: "EPIC-001"
         points: 5
         priority: "must_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-21"
         dependencies: ["STORY-000", "STORY-001", "STORY-002"]
       - story_id: "STORY-004"
         title: "Récupération et génération auto du digest"
         epic: "EPIC-001"
         points: 5
         priority: "must_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-21"
         dependencies: ["STORY-001", "STORY-002"]
       - story_id: "STORY-005"
         title: "Écran liste des actualités"
         epic: "EPIC-002"
         points: 3
         priority: "must_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-21"
         dependencies: ["STORY-001", "STORY-002"]
       - story_id: "STORY-008"
         title: "Intégration OpenRouter pour vulgarisation"
@@ -171,6 +174,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 3
-  completed_points: 9
-  remaining_points: 38
+  completed_stories: 6
+  completed_points: 22
+  remaining_points: 25
