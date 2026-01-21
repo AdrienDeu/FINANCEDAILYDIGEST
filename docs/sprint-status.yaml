@@ -22,16 +22,17 @@ sprints:
     end_date: null
     capacity_points: 32
     committed_points: 32
-    completed_points: 0
-    status: "not_started"
+    completed_points: 3
+    status: "in_progress"
     stories:
       - story_id: "STORY-000"
         title: "Setup projet Flutter + architecture"
         epic: "Infrastructure"
         points: 3
         priority: "must_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-21"
       - story_id: "STORY-001"
         title: "Configuration APIs (Yahoo Finance + OpenRouter)"
         epic: "Infrastructure"
@@ -168,6 +169,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 0
-  completed_points: 0
-  remaining_points: 47
+  completed_stories: 1
+  completed_points: 3
+  remaining_points: 44
