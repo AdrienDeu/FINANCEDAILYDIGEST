@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/entities/news_entity.dart';
+import '../screens/article_detail_screen.dart';
 
 /// List item widget for displaying a news article
 class NewsListItem extends StatelessWidget {
@@ -23,7 +24,11 @@ class NewsListItem extends StatelessWidget {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to article detail (STORY-009)
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ArticleDetailScreen(news: news),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../providers/providers.dart';
 import '../widgets/digest_card.dart';
 import '../widgets/shimmer_loading.dart';
+import '../widgets/suggestion_card.dart';
 
 /// Home screen showing daily digest
 class HomeScreen extends ConsumerWidget {
@@ -93,26 +94,16 @@ class HomeScreen extends ConsumerWidget {
                         return DigestCard(news: news);
                       }),
 
-                      // Suggestions section (will be populated in STORY-011)
-                      if (digest.suggestions.isNotEmpty) ...[
-                        const SizedBox(height: 24),
-                        Text(
-                          'Suggestions du jour',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        const SizedBox(height: 12),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              '${digest.suggestions.length} suggestions disponibles',
-                              style: Theme.of(context).textTheme.bodyMedium,
+                      // Suggestions section
+                      const SizedBox(height: 24),
+                      Text(
+                        'Suggestions du jour',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ),
-                      ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSuggestionsSection(ref),
                     ],
                   );
                 },
@@ -155,6 +146,86 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Build suggestions section with AI-generated suggestions
+  Widget _buildSuggestionsSection(WidgetRef ref) {
+    final suggestionsAsync = ref.watch(suggestionsProvider);
+
+    return suggestionsAsync.when(
+      data: (suggestions) {
+        if (suggestions.isEmpty) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.lightbulb_outline,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Aucune suggestion disponible pour le moment',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          children: suggestions.map((suggestion) {
+            return SuggestionCard(suggestion: suggestion);
+          }).toList(),
+        );
+      },
+      loading: () => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Génération des suggestions...',
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+            ],
+          ),
+        ),
+      ),
+      error: (error, stack) {
+        return Card(
+          color: Colors.orange[50],
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.orange[700],
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Impossible de générer les suggestions. Vérifiez votre clé API OpenRouter.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

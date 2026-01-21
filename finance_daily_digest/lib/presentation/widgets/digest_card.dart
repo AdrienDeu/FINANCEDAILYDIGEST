@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/news_entity.dart';
+import '../screens/article_detail_screen.dart';
 
 /// Card widget for displaying a news item in the digest
 class DigestCard extends StatelessWidget {
@@ -20,7 +21,11 @@ class DigestCard extends StatelessWidget {
       elevation: 1,
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to article detail (STORY-009)
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ArticleDetailScreen(news: news),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
