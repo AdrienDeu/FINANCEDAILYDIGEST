@@ -5,7 +5,7 @@
 version: "6.0.0"
 project_name: "Finance Daily Digest"
 project_level: 2
-current_sprint: 1
+current_sprint: 2
 sprint_plan_path: "docs/sprint-plan-finance-daily-digest-2026-01-21.md"
 
 team:
@@ -100,20 +100,21 @@ sprints:
   - sprint_number: 2
     name: "Améliorations UX"
     goal: "Améliorer l'expérience utilisateur avec détail articles, refresh et sources"
-    start_date: null
+    start_date: "2026-01-22"
     end_date: null
     capacity_points: 10
     committed_points: 10
-    completed_points: 0
-    status: "planned"
+    completed_points: 3
+    status: "in_progress"
     stories:
       - story_id: "STORY-009"
         title: "Écran détail article vulgarisé"
         epic: "EPIC-003"
         points: 3
         priority: "should_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-22"
         dependencies: ["STORY-008"]
       - story_id: "STORY-012"
         title: "Affichage suggestions sur Home"
@@ -176,6 +177,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 8
-  completed_points: 32
-  remaining_points: 15
+  completed_stories: 9
+  completed_points: 35
+  remaining_points: 12
