@@ -8,6 +8,7 @@ import 'data/models/daily_digest_model.dart';
 import 'data/models/news_model.dart';
 import 'data/models/suggestion_model.dart';
 import 'presentation/app.dart';
+import 'presentation/providers/providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,8 +29,12 @@ void main() async {
   await cacheService.init();
 
   runApp(
-    const ProviderScope(
-      child: FinanceDailyDigestApp(),
+    ProviderScope(
+      overrides: [
+        // Provide the initialized CacheService instance
+        cacheServiceProvider.overrideWithValue(cacheService),
+      ],
+      child: const FinanceDailyDigestApp(),
     ),
   );
 }
