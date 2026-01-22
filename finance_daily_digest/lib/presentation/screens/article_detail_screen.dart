@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../domain/entities/news_entity.dart';
 import '../providers/providers.dart';
@@ -246,6 +247,23 @@ class ArticleDetailScreen extends ConsumerWidget {
                     ),
                   ),
 
+                  // View original button
+                  if (news.url != null) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _launchUrl(news.url!),
+                        icon: const Icon(Icons.open_in_new),
+                        label: const Text('Voir l\'article original'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
                   // Original description
                   if (news.description != null) ...[
                     Text(
@@ -270,5 +288,25 @@ class ArticleDetailScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Launch the article URL in external browser
+  Future<void> _launchUrl(String urlString) async {
+    try {
+      final url = Uri.parse(urlString);
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        throw 'Impossible d\'ouvrir l\'URL: $urlString';
+      }
+    } catch (e) {
+      // Error handling is managed by the calling context
+      // In a production app, you might want to show a SnackBar
+      debugPrint('Error launching URL: $e');
+    }
   }
 }

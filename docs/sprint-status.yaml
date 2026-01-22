@@ -101,11 +101,11 @@ sprints:
     name: "Améliorations UX"
     goal: "Améliorer l'expérience utilisateur avec détail articles, refresh et sources"
     start_date: "2026-01-22"
-    end_date: null
+    end_date: "2026-01-22"
     capacity_points: 10
     committed_points: 10
-    completed_points: 8
-    status: "in_progress"
+    completed_points: 10
+    status: "completed"
     stories:
       - story_id: "STORY-009"
         title: "Écran détail article vulgarisé"
@@ -139,8 +139,9 @@ sprints:
         epic: "EPIC-003"
         points: 2
         priority: "should_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-22"
         dependencies: ["STORY-009"]
 
   - sprint_number: 3
@@ -179,6 +180,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 11
-  completed_points: 40
-  remaining_points: 7
+  completed_stories: 12
+  completed_points: 42
+  remaining_points: 5
