@@ -104,7 +104,7 @@ sprints:
     end_date: null
     capacity_points: 10
     committed_points: 10
-    completed_points: 6
+    completed_points: 8
     status: "in_progress"
     stories:
       - story_id: "STORY-009"
@@ -130,8 +130,9 @@ sprints:
         epic: "EPIC-002"
         points: 2
         priority: "should_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-22"
         dependencies: ["STORY-005"]
       - story_id: "STORY-010"
         title: "Accès à l'article original"
@@ -178,6 +179,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 10
-  completed_points: 38
-  remaining_points: 9
+  completed_stories: 11
+  completed_points: 40
+  remaining_points: 7
