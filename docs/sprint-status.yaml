@@ -104,7 +104,7 @@ sprints:
     end_date: null
     capacity_points: 10
     committed_points: 10
-    completed_points: 3
+    completed_points: 6
     status: "in_progress"
     stories:
       - story_id: "STORY-009"
@@ -121,8 +121,9 @@ sprints:
         epic: "EPIC-004"
         points: 3
         priority: "should_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-22"
         dependencies: ["STORY-011", "STORY-003"]
       - story_id: "STORY-006"
         title: "Pull-to-refresh du flux"
@@ -177,6 +178,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 9
-  completed_points: 35
-  remaining_points: 12
+  completed_stories: 10
+  completed_points: 38
+  remaining_points: 9
