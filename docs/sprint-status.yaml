@@ -147,28 +147,30 @@ sprints:
   - sprint_number: 3
     name: "Polish"
     goal: "Finaliser avec filtrage et explications détaillées"
-    start_date: null
+    start_date: "2026-01-25"
     end_date: null
     capacity_points: 5
     committed_points: 5
-    completed_points: 0
-    status: "planned"
+    completed_points: 5
+    status: "completed"
     stories:
       - story_id: "STORY-007"
         title: "Filtrage par catégorie"
         epic: "EPIC-002"
         points: 3
         priority: "could_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-25"
         dependencies: ["STORY-005"]
       - story_id: "STORY-013"
         title: "Explication du pourquoi des suggestions"
         epic: "EPIC-004"
         points: 2
         priority: "should_have"
-        status: "not_started"
+        status: "completed"
         assigned_to: "deu"
+        completion_date: "2026-01-25"
         dependencies: ["STORY-012"]
 
 velocity:
@@ -180,6 +182,6 @@ velocity:
 metrics:
   total_stories: 14
   total_points: 47
-  completed_stories: 12
-  completed_points: 42
-  remaining_points: 5
+  completed_stories: 14
+  completed_points: 47
+  remaining_points: 0
