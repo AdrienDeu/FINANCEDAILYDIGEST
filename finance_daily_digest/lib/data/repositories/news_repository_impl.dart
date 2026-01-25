@@ -4,6 +4,7 @@ import '../../domain/entities/daily_digest_entity.dart';
 import '../../domain/entities/news_entity.dart';
 import '../../domain/repositories/news_repository.dart';
 import '../datasources/cache_service.dart';
+import '../datasources/marketaux_datasource.dart';
 import '../datasources/yahoo_finance_datasource.dart';
 import '../models/daily_digest_model.dart';
 import '../models/mappers/daily_digest_mapper.dart';
@@ -12,13 +13,15 @@ import '../models/mappers/suggestion_mapper.dart';
 import '../models/news_model.dart';
 import '../models/suggestion_model.dart';
 
-/// Implementation of NewsRepository using Yahoo Finance API and Hive cache
+/// Implementation of NewsRepository using Marketaux API for news and Yahoo for quotes
 class NewsRepositoryImpl implements NewsRepository {
-  final YahooFinanceDataSource yahooDataSource;
+  final MarketauxDataSource marketauxDataSource;
+  final YahooQuotesDataSource yahooQuotesDataSource;
   final CacheService cacheService;
 
   NewsRepositoryImpl({
-    required this.yahooDataSource,
+    required this.marketauxDataSource,
+    required this.yahooQuotesDataSource,
     required this.cacheService,
   });
 
@@ -51,11 +54,10 @@ class NewsRepositoryImpl implements NewsRepository {
         );
       }
 
-      // 2. No cache or expired - fetch from API
-      developer.log('Fetching fresh news from Yahoo Finance...');
-      final newsJsonList = await yahooDataSource.fetchNews(
-        region: 'FR',
-        count: 10,
+      // 2. No cache or expired - fetch from Marketaux API
+      developer.log('Fetching fresh news from Marketaux...');
+      final newsJsonList = await marketauxDataSource.fetchGlobalNews(
+        limit: 10,
       );
 
       // 3. Convert to NewsModel and cache
@@ -69,7 +71,7 @@ class NewsRepositoryImpl implements NewsRepository {
       final digest = DailyDigestModel.createToday(
         summary: 'Actualités financières du jour',
         topNewsIds: newsList.take(5).map((n) => n.id).toList(),
-        suggestionIds: [], // Will be populated by STORY-011
+        suggestionIds: [],
       );
 
       await cacheService.saveDigest(digest);
@@ -82,7 +84,7 @@ class NewsRepositoryImpl implements NewsRepository {
         date: digest.date,
         summary: digest.summary,
         topNews: newsEntities,
-        suggestions: [], // Will be populated by STORY-011
+        suggestions: [],
         marketSummary: digest.marketSummary,
         createdAt: digest.createdAt,
       );
@@ -116,23 +118,26 @@ class NewsRepositoryImpl implements NewsRepository {
   }
 
   @override
-  Future<List<NewsEntity>> getNews({String? category}) async {
+  Future<List<NewsEntity>> getNews({String? category, NewsRegion? region}) async {
     try {
-      // 1. Check cache first
-      final cachedNews = category != null
-          ? cacheService.getNewsByCategory(category)
-          : cacheService.getAllNews();
+      // 1. Check cache first (only if no region filter or region is 'all')
+      // When a specific region is selected, always fetch fresh data
+      if (region == null || region == NewsRegion.all) {
+        final cachedNews = category != null
+            ? cacheService.getNewsByCategory(category)
+            : cacheService.getAllNews();
 
-      if (cachedNews.isNotEmpty) {
-        developer.log('Using ${cachedNews.length} cached news items');
-        return cachedNews.map((m) => m.toEntity()).toList();
+        if (cachedNews.isNotEmpty) {
+          developer.log('Using ${cachedNews.length} cached news items');
+          return cachedNews.map((m) => m.toEntity()).toList();
+        }
       }
 
-      // 2. Fetch from API
-      developer.log('Fetching news from Yahoo Finance...');
-      final newsJsonList = await yahooDataSource.fetchNews(
-        region: 'FR',
-        count: 20,
+      // 2. Fetch from Marketaux API with region filter
+      developer.log('Fetching news from Marketaux (region: ${region?.name ?? 'all'})...');
+      final newsJsonList = await marketauxDataSource.fetchGlobalNews(
+        limit: 20,
+        region: region ?? NewsRegion.all,
       );
 
       // 3. Convert and cache
@@ -140,7 +145,10 @@ class NewsRepositoryImpl implements NewsRepository {
         return NewsModel.fromJson(json);
       }).toList();
 
-      await cacheService.saveNewsList(newsList);
+      // Only cache if fetching all regions
+      if (region == null || region == NewsRegion.all) {
+        await cacheService.saveNewsList(newsList);
+      }
 
       // 4. Filter by category if needed
       var filteredNews = newsList;
@@ -172,16 +180,18 @@ class NewsRepositoryImpl implements NewsRepository {
   }
 
   @override
-  Future<List<NewsEntity>> refreshNews() async {
-    developer.log('Refreshing news from API...');
+  Future<List<NewsEntity>> refreshNews({NewsRegion? region}) async {
+    developer.log('Refreshing news from Marketaux API (region: ${region?.name ?? 'all'})...');
 
-    // Clear cache
-    await cacheService.clearAllNews();
+    // Clear cache only if fetching all regions
+    if (region == null || region == NewsRegion.all) {
+      await cacheService.clearAllNews();
+    }
 
-    // Fetch fresh news
-    final newsJsonList = await yahooDataSource.fetchNews(
-      region: 'FR',
-      count: 20,
+    // Fetch fresh news from Marketaux with region filter
+    final newsJsonList = await marketauxDataSource.fetchGlobalNews(
+      limit: 20,
+      region: region ?? NewsRegion.all,
     );
 
     // Convert and cache
@@ -189,8 +199,21 @@ class NewsRepositoryImpl implements NewsRepository {
       return NewsModel.fromJson(json);
     }).toList();
 
-    await cacheService.saveNewsList(newsList);
+    // Only cache if fetching all regions
+    if (region == null || region == NewsRegion.all) {
+      await cacheService.saveNewsList(newsList);
+    }
 
     return newsList.map((m) => m.toEntity()).toList();
+  }
+
+  /// Fetch market summary from Yahoo Finance
+  Future<Map<String, dynamic>> getMarketSummary() async {
+    return await yahooQuotesDataSource.fetchEuropeanMarketSummary();
+  }
+
+  /// Fetch quotes for specific symbols from Yahoo Finance
+  Future<List<Map<String, dynamic>>> getQuotes(List<String> symbols) async {
+    return await yahooQuotesDataSource.fetchQuotes(symbols);
   }
 }

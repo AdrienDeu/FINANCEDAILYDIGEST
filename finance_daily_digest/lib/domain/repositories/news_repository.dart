@@ -9,12 +9,14 @@ abstract class NewsRepository {
   Future<DailyDigestEntity> getDailyDigest();
 
   /// Get all news from cache or API
-  /// Filters by European market (region=FR)
-  Future<List<NewsEntity>> getNews({String? category});
+  /// [category] - Optional category filter (action, etf, obligation, general)
+  /// [region] - Optional region filter (europe, usa, asia, all)
+  Future<List<NewsEntity>> getNews({String? category, NewsRegion? region});
 
   /// Get a specific news article by ID
   Future<NewsEntity?> getNewsById(String id);
 
   /// Refresh news from API (invalidates cache)
-  Future<List<NewsEntity>> refreshNews();
+  /// [region] - Optional region filter (europe, usa, asia, all)
+  Future<List<NewsEntity>> refreshNews({NewsRegion? region});
 }

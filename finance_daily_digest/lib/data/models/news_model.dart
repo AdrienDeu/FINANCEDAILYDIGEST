@@ -43,6 +43,15 @@ class NewsModel extends HiveObject {
   @HiveField(12)
   final DateTime? vulgarizedAt;
 
+  @HiveField(13)
+  final double? sentimentScore;
+
+  @HiveField(14)
+  final List<String>? relatedSymbols;
+
+  @HiveField(15)
+  final String? snippet;
+
   NewsModel({
     required this.id,
     required this.title,
@@ -57,6 +66,9 @@ class NewsModel extends HiveObject {
     required this.cachedAt,
     this.vulgarizedContent,
     this.vulgarizedAt,
+    this.sentimentScore,
+    this.relatedSymbols,
+    this.snippet,
   });
 
   /// Check if the news cache is expired (1 hour TTL)
@@ -92,11 +104,22 @@ class NewsModel extends HiveObject {
       cachedAt: cachedAt,
       vulgarizedContent: vulgarizedContent,
       vulgarizedAt: DateTime.now(),
+      sentimentScore: sentimentScore,
+      relatedSymbols: relatedSymbols,
+      snippet: snippet,
     );
   }
 
-  /// Create from JSON (from API)
+  /// Create from JSON (from API - supports both Yahoo and Marketaux formats)
   factory NewsModel.fromJson(Map<String, dynamic> json) {
+    // Parse related symbols from Marketaux format
+    List<String>? relatedSymbols;
+    if (json['relatedSymbols'] != null) {
+      relatedSymbols = (json['relatedSymbols'] as List<dynamic>)
+          .map((e) => e.toString())
+          .toList();
+    }
+
     return NewsModel(
       id: json['id'] as String? ?? json['uuid'] as String? ?? '',
       title: json['title'] as String? ?? '',
@@ -111,6 +134,9 @@ class NewsModel extends HiveObject {
       category: json['category'] as String?,
       symbol: json['symbol'] as String?,
       cachedAt: DateTime.now(),
+      sentimentScore: (json['sentimentScore'] as num?)?.toDouble(),
+      relatedSymbols: relatedSymbols,
+      snippet: json['snippet'] as String?,
     );
   }
 
@@ -130,6 +156,17 @@ class NewsModel extends HiveObject {
       'cachedAt': cachedAt.toIso8601String(),
       'vulgarizedContent': vulgarizedContent,
       'vulgarizedAt': vulgarizedAt?.toIso8601String(),
+      'sentimentScore': sentimentScore,
+      'relatedSymbols': relatedSymbols,
+      'snippet': snippet,
     };
+  }
+
+  /// Get sentiment label for UI display
+  String get sentimentLabel {
+    if (sentimentScore == null) return 'Neutre';
+    if (sentimentScore! > 0.3) return 'Positif';
+    if (sentimentScore! < -0.3) return 'Négatif';
+    return 'Neutre';
   }
 }

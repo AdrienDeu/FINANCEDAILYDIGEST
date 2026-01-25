@@ -30,13 +30,16 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       cachedAt: fields[10] as DateTime,
       vulgarizedContent: fields[11] as String?,
       vulgarizedAt: fields[12] as DateTime?,
+      sentimentScore: fields[13] as double?,
+      relatedSymbols: (fields[14] as List?)?.cast<String>(),
+      snippet: fields[15] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, NewsModel obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +65,13 @@ class NewsModelAdapter extends TypeAdapter<NewsModel> {
       ..writeByte(11)
       ..write(obj.vulgarizedContent)
       ..writeByte(12)
-      ..write(obj.vulgarizedAt);
+      ..write(obj.vulgarizedAt)
+      ..writeByte(13)
+      ..write(obj.sentimentScore)
+      ..writeByte(14)
+      ..write(obj.relatedSymbols)
+      ..writeByte(15)
+      ..write(obj.snippet);
   }
 
   @override

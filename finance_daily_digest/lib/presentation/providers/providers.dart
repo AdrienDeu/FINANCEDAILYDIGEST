@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/datasources/cache_service.dart';
+import '../../data/datasources/marketaux_datasource.dart';
 import '../../data/datasources/openrouter_datasource.dart';
 import '../../data/datasources/yahoo_finance_datasource.dart';
 import '../../data/repositories/ai_repository_impl.dart';
@@ -24,9 +25,14 @@ final cacheServiceProvider = Provider<CacheService>((ref) {
   return service;
 });
 
-/// Provider for YahooFinanceDataSource
-final yahooFinanceDataSourceProvider = Provider<YahooFinanceDataSource>((ref) {
-  return YahooFinanceDataSource();
+/// Provider for MarketauxDataSource (news)
+final marketauxDataSourceProvider = Provider<MarketauxDataSource>((ref) {
+  return MarketauxDataSource();
+});
+
+/// Provider for YahooQuotesDataSource (market quotes)
+final yahooQuotesDataSourceProvider = Provider<YahooQuotesDataSource>((ref) {
+  return YahooQuotesDataSource();
 });
 
 /// Provider for OpenRouterDataSource
@@ -39,7 +45,8 @@ final openRouterDataSourceProvider = Provider<OpenRouterDataSource>((ref) {
 /// Provider for NewsRepository
 final newsRepositoryProvider = Provider<NewsRepository>((ref) {
   return NewsRepositoryImpl(
-    yahooDataSource: ref.watch(yahooFinanceDataSourceProvider),
+    marketauxDataSource: ref.watch(marketauxDataSourceProvider),
+    yahooQuotesDataSource: ref.watch(yahooQuotesDataSourceProvider),
     cacheService: ref.watch(cacheServiceProvider),
   );
 });
@@ -83,17 +90,20 @@ final dailyDigestProvider =
   return await useCase.execute();
 });
 
-/// State provider for news list
+/// State provider for news list with region filter
+/// Watches both category and region filters
 final newsListProvider =
-    FutureProvider.autoDispose.family<List<NewsEntity>, String?>((ref, category) async {
+    FutureProvider.autoDispose<List<NewsEntity>>((ref) async {
   final useCase = ref.watch(getNewsUseCaseProvider);
-  return await useCase.execute(category: category);
+  final region = ref.watch(newsRegionFilterProvider);
+  return await useCase.execute(region: region);
 });
 
 /// State provider for news refresh
 final newsRefreshProvider = FutureProvider.autoDispose<List<NewsEntity>>((ref) async {
   final useCase = ref.watch(getNewsUseCaseProvider);
-  return await useCase.refresh();
+  final region = ref.watch(newsRegionFilterProvider);
+  return await useCase.refresh(region: region);
 });
 
 /// State provider for vulgarizing an article
@@ -114,4 +124,10 @@ final suggestionsProvider =
 /// Persists during session, defaults to 'all'
 final newsCategoryFilterProvider = StateProvider<NewsCategory>((ref) {
   return NewsCategory.all;
+});
+
+/// State provider for news region filter
+/// Persists during session, defaults to 'all'
+final newsRegionFilterProvider = StateProvider<NewsRegion>((ref) {
+  return NewsRegion.all;
 });

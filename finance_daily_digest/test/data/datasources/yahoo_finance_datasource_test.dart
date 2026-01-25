@@ -5,12 +5,12 @@ import 'package:finance_daily_digest/data/datasources/yahoo_finance_datasource.d
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('YahooFinanceDataSource', () {
-    late YahooFinanceDataSource dataSource;
+  group('YahooQuotesDataSource', () {
+    late YahooQuotesDataSource dataSource;
 
     setUp(() {
       // Create datasource with default client
-      dataSource = YahooFinanceDataSource(
+      dataSource = YahooQuotesDataSource(
         dioClient: DioClient(
           enableLogging: false,
         ),
@@ -21,19 +21,13 @@ void main() {
       expect(dataSource, isNotNull);
     });
 
-    test('fetchNews should handle network errors gracefully', () async {
-      // This test verifies that network errors are properly caught
-      // In a real scenario with a mock, we would inject a failing client
-      expect(dataSource.fetchNews, isA<Function>());
-    });
-
-    test('fetchSymbolNews should handle network errors gracefully', () async {
-      expect(dataSource.fetchSymbolNews, isA<Function>());
-    });
-
     test('fetchEuropeanMarketSummary should handle network errors gracefully',
         () async {
       expect(dataSource.fetchEuropeanMarketSummary, isA<Function>());
+    });
+
+    test('fetchQuotes should handle network errors gracefully', () async {
+      expect(dataSource.fetchQuotes, isA<Function>());
     });
   });
 }

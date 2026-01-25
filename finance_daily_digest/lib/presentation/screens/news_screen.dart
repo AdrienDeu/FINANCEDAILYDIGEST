@@ -6,14 +6,15 @@ import '../providers/providers.dart';
 import '../widgets/news_list_item.dart';
 import '../widgets/shimmer_loading.dart';
 
-/// Screen showing list of financial news with category filtering
+/// Screen showing list of financial news with category and region filtering
 class NewsScreen extends ConsumerWidget {
   const NewsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final newsAsync = ref.watch(newsListProvider(null));
+    final newsAsync = ref.watch(newsListProvider);
     final selectedCategory = ref.watch(newsCategoryFilterProvider);
+    final selectedRegion = ref.watch(newsRegionFilterProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -23,6 +24,13 @@ class NewsScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
+          // Region filter chips
+          _RegionFilterChips(
+            selectedRegion: selectedRegion,
+            onRegionSelected: (region) {
+              ref.read(newsRegionFilterProvider.notifier).state = region;
+            },
+          ),
           // Category filter chips
           _CategoryFilterChips(
             selectedCategory: selectedCategory,
@@ -37,7 +45,7 @@ class NewsScreen extends ConsumerWidget {
                 newsList: newsList,
                 selectedCategory: selectedCategory,
                 onRefresh: () async {
-                  ref.invalidate(newsListProvider(null));
+                  ref.invalidate(newsListProvider);
                 },
               ),
               loading: () => ListView(
@@ -47,7 +55,7 @@ class NewsScreen extends ConsumerWidget {
               error: (error, stack) => _ErrorContent(
                 error: error,
                 onRetry: () {
-                  ref.invalidate(newsListProvider(null));
+                  ref.invalidate(newsListProvider);
                 },
               ),
             ),
@@ -55,6 +63,81 @@ class NewsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Region filter chips widget
+class _RegionFilterChips extends StatelessWidget {
+  final NewsRegion selectedRegion;
+  final ValueChanged<NewsRegion> onRegionSelected;
+
+  const _RegionFilterChips({
+    required this.selectedRegion,
+    required this.onRegionSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            const Icon(Icons.public, size: 18, color: Colors.grey),
+            const SizedBox(width: 8),
+            ...NewsRegion.values.map((region) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(_getRegionLabel(region)),
+                avatar: _getRegionIcon(region),
+                selected: selectedRegion == region,
+                onSelected: (_) => onRegionSelected(region),
+                selectedColor: Theme.of(context).colorScheme.secondary,
+                labelStyle: TextStyle(
+                  color: selectedRegion == region
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.onSurface,
+                  fontWeight: selectedRegion == region
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                  fontSize: 13,
+                ),
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getRegionLabel(NewsRegion region) {
+    switch (region) {
+      case NewsRegion.all:
+        return 'Monde';
+      case NewsRegion.europe:
+        return 'Europe';
+      case NewsRegion.usa:
+        return 'USA';
+      case NewsRegion.asia:
+        return 'Asie';
+    }
+  }
+
+  Widget? _getRegionIcon(NewsRegion region) {
+    switch (region) {
+      case NewsRegion.all:
+        return null;
+      case NewsRegion.europe:
+        return const Text('🇪🇺', style: TextStyle(fontSize: 14));
+      case NewsRegion.usa:
+        return const Text('🇺🇸', style: TextStyle(fontSize: 14));
+      case NewsRegion.asia:
+        return const Text('🌏', style: TextStyle(fontSize: 14));
+    }
   }
 }
 
@@ -71,7 +154,7 @@ class _CategoryFilterChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [

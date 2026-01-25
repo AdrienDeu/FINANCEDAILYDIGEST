@@ -7,6 +7,14 @@ enum NewsCategory {
   general,  // General financial news
 }
 
+/// Enum representing geographic regions for filtering news
+enum NewsRegion {
+  all,      // All regions (global)
+  europe,   // European markets (FR, DE, GB, etc.)
+  usa,      // United States markets
+  asia,     // Asian markets (JP, CN, KR, etc.)
+}
+
 /// Domain entity representing a financial news article
 class NewsEntity {
   final String id;
@@ -19,6 +27,9 @@ class NewsEntity {
   final DateTime publishedAt;
   final String? vulgarizedContent;
   final DateTime? vulgarizedAt;
+  final double? sentimentScore;
+  final List<String>? relatedSymbols;
+  final String? snippet;
 
   const NewsEntity({
     required this.id,
@@ -31,6 +42,9 @@ class NewsEntity {
     required this.publishedAt,
     this.vulgarizedContent,
     this.vulgarizedAt,
+    this.sentimentScore,
+    this.relatedSymbols,
+    this.snippet,
   });
 
   /// Check if vulgarized content exists and is not expired (24h TTL)
@@ -40,6 +54,20 @@ class NewsEntity {
     final difference = now.difference(vulgarizedAt!);
     return difference.inHours < 24;
   }
+
+  /// Get sentiment label for UI display
+  String get sentimentLabel {
+    if (sentimentScore == null) return 'Neutre';
+    if (sentimentScore! > 0.3) return 'Positif';
+    if (sentimentScore! < -0.3) return 'Négatif';
+    return 'Neutre';
+  }
+
+  /// Check if sentiment is positive
+  bool get isPositiveSentiment => sentimentScore != null && sentimentScore! > 0.3;
+
+  /// Check if sentiment is negative
+  bool get isNegativeSentiment => sentimentScore != null && sentimentScore! < -0.3;
 
   NewsEntity copyWith({
     String? id,
@@ -52,6 +80,9 @@ class NewsEntity {
     DateTime? publishedAt,
     String? vulgarizedContent,
     DateTime? vulgarizedAt,
+    double? sentimentScore,
+    List<String>? relatedSymbols,
+    String? snippet,
   }) {
     return NewsEntity(
       id: id ?? this.id,
@@ -64,6 +95,9 @@ class NewsEntity {
       publishedAt: publishedAt ?? this.publishedAt,
       vulgarizedContent: vulgarizedContent ?? this.vulgarizedContent,
       vulgarizedAt: vulgarizedAt ?? this.vulgarizedAt,
+      sentimentScore: sentimentScore ?? this.sentimentScore,
+      relatedSymbols: relatedSymbols ?? this.relatedSymbols,
+      snippet: snippet ?? this.snippet,
     );
   }
 }

@@ -16,6 +16,9 @@ extension NewsModelMapper on NewsModel {
       publishedAt: publishedAt,
       vulgarizedContent: vulgarizedContent,
       vulgarizedAt: vulgarizedAt,
+      sentimentScore: sentimentScore,
+      relatedSymbols: relatedSymbols,
+      snippet: snippet,
     );
   }
 }
@@ -35,6 +38,9 @@ extension NewsEntityMapper on NewsEntity {
       cachedAt: DateTime.now(),
       vulgarizedContent: vulgarizedContent,
       vulgarizedAt: vulgarizedAt,
+      sentimentScore: sentimentScore,
+      relatedSymbols: relatedSymbols,
+      snippet: snippet,
     );
   }
 }
