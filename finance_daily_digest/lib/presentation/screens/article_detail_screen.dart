@@ -292,21 +292,18 @@ class ArticleDetailScreen extends ConsumerWidget {
 
   /// Launch the article URL in external browser
   Future<void> _launchUrl(String urlString) async {
-    try {
-      final url = Uri.parse(urlString);
+    // Encode the URL to handle special characters
+    final encodedUrl = Uri.encodeFull(urlString);
+    final url = Uri.parse(encodedUrl);
 
-      if (await canLaunchUrl(url)) {
-        await launchUrl(
-          url,
-          mode: LaunchMode.externalApplication,
-        );
-      } else {
-        throw 'Impossible d\'ouvrir l\'URL: $urlString';
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        debugPrint('Could not launch $url');
+        // Optionally, show a snackbar to the user
       }
     } catch (e) {
-      // Error handling is managed by the calling context
-      // In a production app, you might want to show a SnackBar
       debugPrint('Error launching URL: $e');
+      // Optionally, show a snackbar to the user
     }
   }
 }

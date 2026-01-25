@@ -14,6 +14,7 @@ extension SuggestionModelMapper on SuggestionModel {
       risk: risk,
       peaEligible: peaEligible,
       createdAt: createdAt,
+      relatedNewsId: relatedNewsId,
     );
   }
 }
@@ -31,6 +32,7 @@ extension SuggestionEntityMapper on SuggestionEntity {
       peaEligible: peaEligible,
       createdAt: createdAt,
       cachedAt: DateTime.now(),
+      relatedNewsId: relatedNewsId,
     );
   }
 }

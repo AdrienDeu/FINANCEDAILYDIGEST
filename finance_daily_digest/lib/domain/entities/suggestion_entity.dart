@@ -8,6 +8,7 @@ class SuggestionEntity {
   final String risk; // Faible, Moyen, Élevé
   final bool peaEligible;
   final DateTime createdAt;
+  final String? relatedNewsId; // ID of the news article that led to this suggestion
 
   const SuggestionEntity({
     required this.id,
@@ -18,6 +19,7 @@ class SuggestionEntity {
     required this.risk,
     required this.peaEligible,
     required this.createdAt,
+    this.relatedNewsId,
   });
 
   SuggestionEntity copyWith({
@@ -29,6 +31,7 @@ class SuggestionEntity {
     String? risk,
     bool? peaEligible,
     DateTime? createdAt,
+    String? relatedNewsId,
   }) {
     return SuggestionEntity(
       id: id ?? this.id,
@@ -39,6 +42,7 @@ class SuggestionEntity {
       risk: risk ?? this.risk,
       peaEligible: peaEligible ?? this.peaEligible,
       createdAt: createdAt ?? this.createdAt,
+      relatedNewsId: relatedNewsId ?? this.relatedNewsId,
     );
   }
 }

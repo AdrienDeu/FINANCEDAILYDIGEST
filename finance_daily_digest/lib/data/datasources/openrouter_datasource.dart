@@ -29,11 +29,11 @@ class OpenRouterDataSource {
     return apiKey;
   }
 
-  /// Generate a completion using OpenRouter (Mistral model)
+  /// Generate a completion using OpenRouter
   ///
   /// [prompt] - The user prompt
   /// [systemPrompt] - Optional system prompt for context
-  /// [model] - AI model to use (default: mistralai/mistral-7b-instruct)
+  /// [model] - AI model to use (default: google/gemini-2.0-flash-001)
   /// [maxTokens] - Maximum tokens in response (default: 500)
   /// [temperature] - Creativity level 0.0-1.0 (default: 0.7)
   ///
@@ -41,7 +41,7 @@ class OpenRouterDataSource {
   Future<String> generateCompletion({
     required String prompt,
     String? systemPrompt,
-    String model = 'mistralai/mistral-7b-instruct',
+    String model = 'google/gemini-2.0-flash-001',
     int maxTokens = 500,
     double temperature = 0.7,
   }) async {
@@ -139,27 +139,34 @@ class OpenRouterDataSource {
     required String articleTitle,
     required String articleContent,
   }) async {
-    const systemPrompt = '''Tu es un expert financier qui vulgarise des
-actualités financières pour des investisseurs débutants français.
-Ton rôle est d'expliquer les informations de manière simple, claire
-et accessible, sans jargon technique.''';
+    const systemPrompt = '''Tu es un expert financier pédagogue qui explique les actualités financières en français simple pour des investisseurs débutants. Tu dois TOUJOURS répondre en français.''';
 
-    final userPrompt = '''Vulgarise cet article financier pour un débutant :
+    final userPrompt = '''IMPORTANT: Réponds UNIQUEMENT en français.
 
-Titre: $articleTitle
+Voici un article financier à vulgariser pour un débutant:
 
-Contenu: $articleContent
+TITRE: $articleTitle
 
-Explique en français simple (maximum 300 mots):
-- De quoi parle l'article
-- Pourquoi c'est important
-- Quel impact potentiel pour un investisseur particulier
-- Les termes techniques simplifiés''';
+CONTENU: $articleContent
+
+Explique cet article en français simple et accessible (200-300 mots maximum). Structure ta réponse ainsi:
+
+📰 DE QUOI PARLE L'ARTICLE:
+[Explication simple du sujet]
+
+💡 POURQUOI C'EST IMPORTANT:
+[Impact sur les marchés ou l'économie]
+
+👤 CE QUE ÇA SIGNIFIE POUR UN INVESTISSEUR:
+[Conseils pratiques pour un débutant]
+
+📚 VOCABULAIRE SIMPLIFIÉ:
+[2-3 termes techniques expliqués simplement]''';
 
     return await generateCompletion(
       prompt: userPrompt,
       systemPrompt: systemPrompt,
-      maxTokens: 500,
+      maxTokens: 600,
       temperature: 0.7,
     );
   }

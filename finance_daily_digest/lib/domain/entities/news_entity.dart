@@ -1,3 +1,12 @@
+/// Enum representing news categories for filtering
+enum NewsCategory {
+  all,      // Show all news
+  action,   // Actions/Stocks
+  etf,      // ETFs
+  obligation, // Bonds/Obligations
+  general,  // General financial news
+}
+
 /// Domain entity representing a financial news article
 class NewsEntity {
   final String id;

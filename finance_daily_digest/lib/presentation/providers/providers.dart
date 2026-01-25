@@ -109,3 +109,9 @@ final suggestionsProvider =
   final useCase = ref.watch(getSuggestionsUseCaseProvider);
   return await useCase.execute();
 });
+
+/// State provider for news category filter
+/// Persists during session, defaults to 'all'
+final newsCategoryFilterProvider = StateProvider<NewsCategory>((ref) {
+  return NewsCategory.all;
+});
