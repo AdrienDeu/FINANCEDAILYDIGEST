@@ -48,10 +48,17 @@ class NewsRepositoryImpl implements NewsRepository {
             .map((m) => m.toEntity())
             .toList();
 
-        return cachedDigest.toEntity(
-          newsEntities: newsEntities,
-          suggestionEntities: suggestionEntities,
-        );
+        // If news are missing from cache, fetch fresh data
+        if (newsEntities.isEmpty && cachedDigest.topNewsIds.isNotEmpty) {
+          developer.log('Cached news expired, fetching fresh data...');
+          // Clear the expired digest and continue to fetch fresh data
+          await cacheService.deleteDigest(cachedDigest.id);
+        } else {
+          return cachedDigest.toEntity(
+            newsEntities: newsEntities,
+            suggestionEntities: suggestionEntities,
+          );
+        }
       }
 
       // 2. No cache or expired - fetch from Marketaux API
