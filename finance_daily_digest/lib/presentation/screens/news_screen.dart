@@ -118,6 +118,8 @@ class _RegionFilterChips extends StatelessWidget {
     switch (region) {
       case NewsRegion.all:
         return 'Monde';
+      case NewsRegion.france:
+        return 'France';
       case NewsRegion.europe:
         return 'Europe';
       case NewsRegion.usa:
@@ -131,6 +133,8 @@ class _RegionFilterChips extends StatelessWidget {
     switch (region) {
       case NewsRegion.all:
         return null;
+      case NewsRegion.france:
+        return const Text('🇫🇷', style: TextStyle(fontSize: 14));
       case NewsRegion.europe:
         return const Text('🇪🇺', style: TextStyle(fontSize: 14));
       case NewsRegion.usa:

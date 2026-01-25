@@ -21,9 +21,13 @@ class MarketauxConfig {
     'in', // India (emerging)
   ];
 
-  /// European countries
-  static const List<String> europeCountries = [
+  /// France only
+  static const List<String> franceCountries = [
     'fr', // France
+  ];
+
+  /// European countries (excluding France which has its own filter)
+  static const List<String> europeCountries = [
     'de', // Germany
     'gb', // United Kingdom
     'it', // Italy
@@ -31,6 +35,9 @@ class MarketauxConfig {
     'nl', // Netherlands
     'ch', // Switzerland
     'be', // Belgium
+    'at', // Austria
+    'pt', // Portugal
+    'ie', // Ireland
   ];
 
   /// USA countries
@@ -52,6 +59,8 @@ class MarketauxConfig {
   /// Get countries for a specific region
   static List<String> getCountriesForRegion(NewsRegion region) {
     switch (region) {
+      case NewsRegion.france:
+        return franceCountries;
       case NewsRegion.europe:
         return europeCountries;
       case NewsRegion.usa:
@@ -64,7 +73,8 @@ class MarketauxConfig {
   }
 
   /// Languages for news content
-  static const List<String> defaultLanguages = ['en', 'fr'];
+  static const List<String> defaultLanguages = ['fr', 'en'];
+
 
   /// Key symbols to track
   static const List<String> defaultSymbols = [
@@ -224,15 +234,18 @@ class MarketauxDataSource {
   }
 
   /// Fetch news with default global configuration
-  /// [region] - Optional region filter (europe, usa, asia, all)
+  /// [region] - Optional region filter (france, europe, usa, asia, all)
+  ///
+  /// Note: The 'countries' parameter filters by entity/stock country
+  /// (where the stock is listed), giving news about stocks from that region.
   Future<List<Map<String, dynamic>>> fetchGlobalNews({
     int limit = 20,
     NewsRegion region = NewsRegion.all,
   }) async {
     final countries = MarketauxConfig.getCountriesForRegion(region);
+
     return fetchNews(
       countries: countries,
-      languages: MarketauxConfig.defaultLanguages,
       limit: limit,
     );
   }

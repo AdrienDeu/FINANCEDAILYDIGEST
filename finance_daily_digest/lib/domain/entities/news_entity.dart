@@ -10,7 +10,8 @@ enum NewsCategory {
 /// Enum representing geographic regions for filtering news
 enum NewsRegion {
   all,      // All regions (global)
-  europe,   // European markets (FR, DE, GB, etc.)
+  france,   // France only
+  europe,   // European markets (DE, IT, ES, etc. - excluding FR)
   usa,      // United States markets
   asia,     // Asian markets (JP, CN, KR, etc.)
 }
