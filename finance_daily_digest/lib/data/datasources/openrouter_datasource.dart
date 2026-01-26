@@ -33,7 +33,7 @@ class OpenRouterDataSource {
   ///
   /// [prompt] - The user prompt
   /// [systemPrompt] - Optional system prompt for context
-  /// [model] - AI model to use (default: google/gemini-2.0-flash-001)
+  /// [model] - AI model to use (default: mistralai/mistral-nemo)
   /// [maxTokens] - Maximum tokens in response (default: 500)
   /// [temperature] - Creativity level 0.0-1.0 (default: 0.7)
   ///
@@ -41,7 +41,7 @@ class OpenRouterDataSource {
   Future<String> generateCompletion({
     required String prompt,
     String? systemPrompt,
-    String model = 'google/gemini-2.0-flash-001',
+    String model = 'mistralai/mistral-nemo',
     int maxTokens = 500,
     double temperature = 0.7,
   }) async {
