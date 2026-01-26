@@ -140,11 +140,12 @@ class NewsRepositoryImpl implements NewsRepository {
         }
       }
 
-      // 2. Fetch from Marketaux API with region filter
-      developer.log('Fetching news from Marketaux (region: ${region?.name ?? 'all'})...');
+      // 2. Fetch from Marketaux API with region and industry filter
+      developer.log('Fetching news from Marketaux (region: ${region?.name ?? 'all'}, industry: $category)...');
       final newsJsonList = await marketauxDataSource.fetchGlobalNews(
         limit: 20,
         region: region ?? NewsRegion.all,
+        industry: category,
       );
 
       // 3. Convert and cache
@@ -157,13 +158,7 @@ class NewsRepositoryImpl implements NewsRepository {
         await cacheService.saveNewsList(newsList);
       }
 
-      // 4. Filter by category if needed
-      var filteredNews = newsList;
-      if (category != null) {
-        filteredNews = newsList.where((n) => n.category == category).toList();
-      }
-
-      return filteredNews.map((m) => m.toEntity()).toList();
+      return newsList.map((m) => m.toEntity()).toList();
     } catch (e) {
       developer.log('Error fetching news: $e');
 

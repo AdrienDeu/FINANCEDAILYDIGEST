@@ -96,7 +96,15 @@ final newsListProvider =
     FutureProvider.autoDispose<List<NewsEntity>>((ref) async {
   final useCase = ref.watch(getNewsUseCaseProvider);
   final region = ref.watch(newsRegionFilterProvider);
-  return await useCase.execute(region: region);
+  final industry = ref.watch(newsIndustryFilterProvider);
+
+  // Convert industry enum to string for the API
+  final industryString = _getIndustryApiString(industry);
+
+  return await useCase.execute(
+    region: region,
+    category: industry == NewsIndustry.all ? null : industryString,
+  );
 });
 
 /// State provider for news refresh
@@ -120,10 +128,11 @@ final suggestionsProvider =
   return await useCase.execute();
 });
 
-/// State provider for news category filter
+
+/// State provider for news industry filter
 /// Persists during session, defaults to 'all'
-final newsCategoryFilterProvider = StateProvider<NewsCategory>((ref) {
-  return NewsCategory.all;
+final newsIndustryFilterProvider = StateProvider<NewsIndustry>((ref) {
+  return NewsIndustry.all;
 });
 
 /// State provider for news region filter
@@ -131,3 +140,26 @@ final newsCategoryFilterProvider = StateProvider<NewsCategory>((ref) {
 final newsRegionFilterProvider = StateProvider<NewsRegion>((ref) {
   return NewsRegion.all;
 });
+
+String _getIndustryApiString(NewsIndustry industry) {
+  switch (industry) {
+    case NewsIndustry.all:
+      return 'general'; // Assuming 'general' fetches all categories from the API
+    case NewsIndustry.technology:
+      return 'Technology';
+    case NewsIndustry.industrials:
+      return 'Industrials';
+    case NewsIndustry.healthcare:
+      return 'Healthcare';
+    case NewsIndustry.financials:
+      return 'Financial Services';
+    case NewsIndustry.energy:
+      return 'Energy';
+    case NewsIndustry.materials:
+      return 'Basic Materials';
+    case NewsIndustry.telecom:
+      return 'Telecom';
+    case NewsIndustry.utilities:
+      return 'Utilities';
+  }
+}

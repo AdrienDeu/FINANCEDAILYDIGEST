@@ -1,12 +1,3 @@
-/// Enum representing news categories for filtering
-enum NewsCategory {
-  all,      // Show all news
-  action,   // Actions/Stocks
-  etf,      // ETFs
-  obligation, // Bonds/Obligations
-  general,  // General financial news
-}
-
 /// Enum representing geographic regions for filtering news
 enum NewsRegion {
   all,      // All regions (global)
@@ -14,6 +5,27 @@ enum NewsRegion {
   europe,   // European markets (DE, IT, ES, etc. - excluding FR)
   usa,      // United States markets
   asia,     // Asian markets (JP, CN, KR, etc.)
+}
+
+/// Enum for news industry sectors
+enum NewsIndustry {
+  all,
+  technology,
+  industrials,
+  healthcare,
+  financials,
+  energy,
+  materials,
+  telecom,
+  utilities,
+}
+
+/// Enum for news sentiment
+enum NewsSentiment {
+  all,
+  positive,
+  neutral,
+  negative,
 }
 
 /// Domain entity representing a financial news article

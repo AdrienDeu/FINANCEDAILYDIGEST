@@ -241,12 +241,14 @@ class MarketauxDataSource {
   Future<List<Map<String, dynamic>>> fetchGlobalNews({
     int limit = 20,
     NewsRegion region = NewsRegion.all,
+    String? industry,
   }) async {
     final countries = MarketauxConfig.getCountriesForRegion(region);
 
     return fetchNews(
       countries: countries,
       limit: limit,
+      industries: industry != null ? [industry] : null,
     );
   }
 

@@ -13,7 +13,7 @@ class NewsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final newsAsync = ref.watch(newsListProvider);
-    final selectedCategory = ref.watch(newsCategoryFilterProvider);
+    final selectedIndustry = ref.watch(newsIndustryFilterProvider);
     final selectedRegion = ref.watch(newsRegionFilterProvider);
 
     return Scaffold(
@@ -31,11 +31,11 @@ class NewsScreen extends ConsumerWidget {
               ref.read(newsRegionFilterProvider.notifier).state = region;
             },
           ),
-          // Category filter chips
-          _CategoryFilterChips(
-            selectedCategory: selectedCategory,
-            onCategorySelected: (category) {
-              ref.read(newsCategoryFilterProvider.notifier).state = category;
+          // Industry filter chips
+          _IndustryFilterChips(
+            selectedIndustry: selectedIndustry,
+            onIndustrySelected: (industry) {
+              ref.read(newsIndustryFilterProvider.notifier).state = industry;
             },
           ),
           // News list
@@ -43,7 +43,6 @@ class NewsScreen extends ConsumerWidget {
             child: newsAsync.when(
               data: (newsList) => _NewsListContent(
                 newsList: newsList,
-                selectedCategory: selectedCategory,
                 onRefresh: () async {
                   ref.invalidate(newsListProvider);
                 },
@@ -145,14 +144,14 @@ class _RegionFilterChips extends StatelessWidget {
   }
 }
 
-/// Category filter chips widget
-class _CategoryFilterChips extends StatelessWidget {
-  final NewsCategory selectedCategory;
-  final ValueChanged<NewsCategory> onCategorySelected;
+/// Industry filter chips widget
+class _IndustryFilterChips extends StatelessWidget {
+  final NewsIndustry selectedIndustry;
+  final ValueChanged<NewsIndustry> onIndustrySelected;
 
-  const _CategoryFilterChips({
-    required this.selectedCategory,
-    required this.onCategorySelected,
+  const _IndustryFilterChips({
+    required this.selectedIndustry,
+    required this.onIndustrySelected,
   });
 
   @override
@@ -163,7 +162,7 @@ class _CategoryFilterChips extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -172,43 +171,50 @@ class _CategoryFilterChips extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: NewsCategory.values
-              .where((c) => c != NewsCategory.general) // Exclude general, it's not user-facing
-              .map((category) => Padding(
+          children: NewsIndustry.values
+              .map((industry) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
-                      label: Text(_getCategoryLabel(category)),
-                      selected: selectedCategory == category,
-                      onSelected: (_) => onCategorySelected(category),
+                      label: Text(_getIndustryLabel(industry)),
+                      selected: selectedIndustry == industry,
+                      onSelected: (_) => onIndustrySelected(industry),
                       selectedColor: Theme.of(context).colorScheme.primary,
                       labelStyle: TextStyle(
-                        color: selectedCategory == category
+                        color: selectedIndustry == industry
                             ? Colors.white
                             : Theme.of(context).colorScheme.onSurface,
-                        fontWeight: selectedCategory == category
+                        fontWeight: selectedIndustry == industry
                             ? FontWeight.bold
                             : FontWeight.normal,
                       ),
                     ),
-                  ),)
+                  ))
               .toList(),
         ),
       ),
     );
   }
 
-  String _getCategoryLabel(NewsCategory category) {
-    switch (category) {
-      case NewsCategory.all:
+  String _getIndustryLabel(NewsIndustry industry) {
+    switch (industry) {
+      case NewsIndustry.all:
         return 'Tous';
-      case NewsCategory.action:
-        return 'Actions';
-      case NewsCategory.etf:
-        return 'ETF';
-      case NewsCategory.obligation:
-        return 'Obligations';
-      case NewsCategory.general:
-        return 'Général';
+      case NewsIndustry.technology:
+        return 'Technologie';
+      case NewsIndustry.industrials:
+        return 'Industrie';
+      case NewsIndustry.healthcare:
+        return 'Santé';
+      case NewsIndustry.financials:
+        return 'Finance';
+      case NewsIndustry.energy:
+        return 'Énergie';
+      case NewsIndustry.materials:
+        return 'Matériaux';
+      case NewsIndustry.telecom:
+        return 'Télécom';
+      case NewsIndustry.utilities:
+        return 'Services publics';
     }
   }
 }
@@ -216,22 +222,17 @@ class _CategoryFilterChips extends StatelessWidget {
 /// News list content widget
 class _NewsListContent extends StatelessWidget {
   final List<NewsEntity> newsList;
-  final NewsCategory selectedCategory;
   final Future<void> Function() onRefresh;
 
   const _NewsListContent({
     required this.newsList,
-    required this.selectedCategory,
     required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Filter news by category (client-side, instant filtering)
-    final filteredNews = _filterNewsByCategory(newsList, selectedCategory);
-
     // Sort by date (most recent first)
-    final sortedNews = List<NewsEntity>.from(filteredNews)
+    final sortedNews = List<NewsEntity>.from(newsList)
       ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
 
     if (sortedNews.isEmpty) {
@@ -246,12 +247,11 @@ class _NewsListContent extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              selectedCategory == NewsCategory.all
-                  ? 'Aucune actualité disponible'
-                  : 'Aucune actualité dans cette catégorie',
+              'Aucune actualité ne correspond à vos filtres',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -269,36 +269,6 @@ class _NewsListContent extends StatelessWidget {
         },
       ),
     );
-  }
-
-  List<NewsEntity> _filterNewsByCategory(
-    List<NewsEntity> news,
-    NewsCategory category,
-  ) {
-    if (category == NewsCategory.all) {
-      return news;
-    }
-
-    return news.where((item) {
-      final itemCategory = item.category?.toLowerCase() ?? '';
-      switch (category) {
-        case NewsCategory.action:
-          return itemCategory.contains('action') ||
-              itemCategory.contains('stock') ||
-              itemCategory.contains('equity');
-        case NewsCategory.etf:
-          return itemCategory.contains('etf') ||
-              itemCategory.contains('tracker') ||
-              itemCategory.contains('index');
-        case NewsCategory.obligation:
-          return itemCategory.contains('obligation') ||
-              itemCategory.contains('bond') ||
-              itemCategory.contains('fixed');
-        case NewsCategory.general:
-        case NewsCategory.all:
-          return true;
-      }
-    }).toList();
   }
 }
 
