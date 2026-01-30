@@ -5,7 +5,7 @@
 version: "6.0.0"
 project_name: "Finance Daily Digest"
 project_level: 2
-current_sprint: 2
+current_sprint: 4
 sprint_plan_path: "docs/sprint-plan-finance-daily-digest-2026-01-21.md"
 
 team:
@@ -148,7 +148,7 @@ sprints:
     name: "Polish"
     goal: "Finaliser avec filtrage et explications détaillées"
     start_date: "2026-01-25"
-    end_date: null
+    end_date: "2026-01-25"
     capacity_points: 5
     committed_points: 5
     completed_points: 5
@@ -173,6 +173,27 @@ sprints:
         completion_date: "2026-01-25"
         dependencies: ["STORY-012"]
 
+  - sprint_number: 4
+    name: "Analytics"
+    goal: "Ajouter les statistiques et tendances de marché avec time series"
+    start_date: "2026-01-30"
+    end_date: "2026-01-30"
+    capacity_points: 8
+    committed_points: 8
+    completed_points: 8
+    status: "completed"
+    stories:
+      - story_id: "STORY-014"
+        title: "Onglet Statistiques avec Time Series Marketaux"
+        epic: "EPIC-005"
+        points: 8
+        priority: "should_have"
+        status: "completed"
+        assigned_to: "deu"
+        completion_date: "2026-01-30"
+        story_doc: "docs/stories/STORY-014.md"
+        dependencies: ["STORY-001"]
+
 velocity:
   sprint_1: 32
   sprint_2: null
@@ -180,8 +201,8 @@ velocity:
   rolling_average: 32
 
 metrics:
-  total_stories: 14
-  total_points: 47
-  completed_stories: 14
-  completed_points: 47
+  total_stories: 15
+  total_points: 55
+  completed_stories: 15
+  completed_points: 55
   remaining_points: 0

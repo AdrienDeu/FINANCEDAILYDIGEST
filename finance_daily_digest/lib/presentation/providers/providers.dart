@@ -11,7 +11,9 @@ import '../../domain/entities/news_entity.dart';
 import '../../domain/entities/suggestion_entity.dart';
 import '../../domain/repositories/ai_repository.dart';
 import '../../domain/repositories/news_repository.dart';
+import '../../domain/entities/stock_chart_entity.dart';
 import '../../domain/usecases/get_daily_digest_usecase.dart';
+import '../../domain/usecases/get_stock_chart_usecase.dart';
 import '../../domain/usecases/get_news_usecase.dart';
 import '../../domain/usecases/get_suggestions_usecase.dart';
 import '../../domain/usecases/vulgarize_article_usecase.dart';
@@ -79,6 +81,13 @@ final vulgarizeArticleUseCaseProvider = Provider<VulgarizeArticleUseCase>((ref) 
 /// Provider for GetSuggestionsUseCase
 final getSuggestionsUseCaseProvider = Provider<GetSuggestionsUseCase>((ref) {
   return GetSuggestionsUseCase(ref.watch(aiRepositoryProvider));
+});
+
+/// Provider for GetStockChartUseCase
+final getStockChartUseCaseProvider = Provider<GetStockChartUseCase>((ref) {
+  return GetStockChartUseCase(
+    ref.watch(yahooQuotesDataSourceProvider),
+  );
 });
 
 // ==================== STATE PROVIDERS ====================
@@ -163,3 +172,75 @@ String _getIndustryApiString(NewsIndustry industry) {
       return 'Utilities';
   }
 }
+
+// ==================== STOCK CHART PROVIDERS ====================
+
+/// Available symbols for stats screen
+const List<String> availableStatsSymbols = [
+  'AAPL',
+  'MSFT',
+  'GOOGL',
+  'AMZN',
+  'NVDA',
+  'META',
+  'TSLA',
+  'MC.PA',
+  'SAP.DE',
+];
+
+/// Default symbols to show on stats screen
+const List<String> defaultStatsSymbols = ['AAPL', 'MSFT', 'GOOGL'];
+
+/// State provider for chart period filter
+final chartPeriodProvider = StateProvider<ChartPeriod>((ref) {
+  return ChartPeriod.oneMonth;
+});
+
+/// State provider for selected symbols
+final selectedStatsSymbolsProvider = StateProvider<List<String>>((ref) {
+  return List.from(defaultStatsSymbols);
+});
+
+/// State provider for chart view mode (price or volume)
+final chartViewModeProvider = StateProvider<ChartViewMode>((ref) {
+  return ChartViewMode.price;
+});
+
+/// View mode enum for charts
+enum ChartViewMode {
+  price,
+  volume,
+}
+
+/// State provider for stock chart data
+/// Watches period and symbols and fetches data accordingly
+final stockChartProvider = FutureProvider.autoDispose<Map<String, StockChartEntity>>((ref) async {
+  final useCase = ref.watch(getStockChartUseCaseProvider);
+  final period = ref.watch(chartPeriodProvider);
+  final symbols = ref.watch(selectedStatsSymbolsProvider);
+
+  if (symbols.isEmpty) {
+    return {};
+  }
+
+  return await useCase.execute(
+    symbols: symbols,
+    period: period,
+  );
+});
+
+/// State provider for refreshing stock charts
+final stockChartRefreshProvider = FutureProvider.autoDispose<Map<String, StockChartEntity>>((ref) async {
+  final useCase = ref.watch(getStockChartUseCaseProvider);
+  final period = ref.watch(chartPeriodProvider);
+  final symbols = ref.watch(selectedStatsSymbolsProvider);
+
+  if (symbols.isEmpty) {
+    return {};
+  }
+
+  return await useCase.refresh(
+    symbols: symbols,
+    period: period,
+  );
+});

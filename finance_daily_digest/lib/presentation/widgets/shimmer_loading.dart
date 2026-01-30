@@ -1,6 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+/// Generic shimmer loading widget with configurable height
+class ShimmerLoading extends StatelessWidget {
+  final double height;
+  final double? width;
+  final BorderRadius? borderRadius;
+
+  const ShimmerLoading({
+    super.key,
+    required this.height,
+    this.width,
+    this.borderRadius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        width: width ?? double.infinity,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: borderRadius ?? BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+}
+
 /// Shimmer loading widget for digest screen
 class DigestShimmerLoading extends StatelessWidget {
   const DigestShimmerLoading({super.key});

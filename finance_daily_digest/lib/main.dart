@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'data/datasources/cache_service.dart';
 import 'data/models/daily_digest_model.dart';
+import 'data/models/entity_stats_model.dart';
 import 'data/models/news_model.dart';
 import 'data/models/suggestion_model.dart';
 import 'presentation/app.dart';
@@ -23,6 +24,7 @@ void main() async {
   Hive.registerAdapter(NewsModelAdapter());
   Hive.registerAdapter(SuggestionModelAdapter());
   Hive.registerAdapter(DailyDigestModelAdapter());
+  Hive.registerAdapter(EntityStatsModelAdapter());
 
   // Initialize CacheService
   final cacheService = CacheService();

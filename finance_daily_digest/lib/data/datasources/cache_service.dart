@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 
 import '../models/daily_digest_model.dart';
+import '../models/entity_stats_model.dart';
 import '../models/news_model.dart';
 import '../models/suggestion_model.dart';
 
@@ -10,17 +11,20 @@ class CacheService {
   static const String newsBoxName = 'newsBox';
   static const String suggestionsBoxName = 'suggestionsBox';
   static const String digestBoxName = 'digestBox';
+  static const String entityStatsBoxName = 'entityStatsBox';
 
   // Boxes
   late final Box<NewsModel> _newsBox;
   late final Box<SuggestionModel> _suggestionsBox;
   late final Box<DailyDigestModel> _digestBox;
+  late final Box<EntityStatsModel> _entityStatsBox;
 
   /// Initialize boxes
   Future<void> init() async {
     _newsBox = await Hive.openBox<NewsModel>(newsBoxName);
     _suggestionsBox = await Hive.openBox<SuggestionModel>(suggestionsBoxName);
     _digestBox = await Hive.openBox<DailyDigestModel>(digestBoxName);
+    _entityStatsBox = await Hive.openBox<EntityStatsModel>(entityStatsBoxName);
 
     // Clean expired entries on init
     await cleanExpiredEntries();
@@ -178,6 +182,82 @@ class CacheService {
     await _digestBox.clear();
   }
 
+  // ==================== ENTITY STATS ====================
+
+  /// Save entity stats
+  Future<void> saveEntityStats(EntityStatsModel stats) async {
+    await _entityStatsBox.put(stats.cacheKey, stats);
+  }
+
+  /// Save multiple entity stats
+  Future<void> saveEntityStatsList(List<EntityStatsModel> statsList) async {
+    final entries = {for (var s in statsList) s.cacheKey: s};
+    await _entityStatsBox.putAll(entries);
+  }
+
+  /// Get entity stats by cache key
+  EntityStatsModel? getEntityStats(String cacheKey) {
+    final stats = _entityStatsBox.get(cacheKey);
+    if (stats != null && stats.isCacheExpired) {
+      _entityStatsBox.delete(cacheKey);
+      return null;
+    }
+    return stats;
+  }
+
+  /// Get entity stats for a symbol within a date range
+  List<EntityStatsModel> getEntityStatsForSymbol(
+    String symbol,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    return _entityStatsBox.values.where((stats) {
+      if (stats.isCacheExpired) return false;
+      if (stats.symbol != symbol) return false;
+      return stats.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+          stats.date.isBefore(endDate.add(const Duration(days: 1)));
+    }).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+  }
+
+  /// Get all cached entity stats for symbols (non-expired)
+  List<EntityStatsModel> getAllEntityStatsForSymbols(
+    List<String> symbols,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    return _entityStatsBox.values.where((stats) {
+      if (stats.isCacheExpired) return false;
+      if (!symbols.contains(stats.symbol)) return false;
+      return stats.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+          stats.date.isBefore(endDate.add(const Duration(days: 1)));
+    }).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+  }
+
+  /// Check if we have complete cached stats for a query
+  bool hasCompleteEntityStats(
+    List<String> symbols,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    for (final symbol in symbols) {
+      final stats = getEntityStatsForSymbol(symbol, startDate, endDate);
+      if (stats.isEmpty) return false;
+    }
+    return true;
+  }
+
+  /// Delete entity stats
+  Future<void> deleteEntityStats(String cacheKey) async {
+    await _entityStatsBox.delete(cacheKey);
+  }
+
+  /// Clear all entity stats
+  Future<void> clearAllEntityStats() async {
+    await _entityStatsBox.clear();
+  }
+
   // ==================== MAINTENANCE ====================
 
   /// Clean expired entries from all boxes
@@ -208,6 +288,15 @@ class CacheService {
     for (final id in expiredDigests) {
       await _digestBox.delete(id);
     }
+
+    // Clean expired entity stats
+    final expiredStats = _entityStatsBox.values
+        .where((s) => s.isCacheExpired)
+        .map((s) => s.cacheKey)
+        .toList();
+    for (final key in expiredStats) {
+      await _entityStatsBox.delete(key);
+    }
   }
 
   /// Clear all cached data
@@ -215,6 +304,7 @@ class CacheService {
     await _newsBox.clear();
     await _suggestionsBox.clear();
     await _digestBox.clear();
+    await _entityStatsBox.clear();
   }
 
   /// Get cache statistics
@@ -223,7 +313,11 @@ class CacheService {
       'newsCount': _newsBox.length,
       'suggestionsCount': _suggestionsBox.length,
       'digestsCount': _digestBox.length,
-      'totalEntries': _newsBox.length + _suggestionsBox.length + _digestBox.length,
+      'entityStatsCount': _entityStatsBox.length,
+      'totalEntries': _newsBox.length +
+          _suggestionsBox.length +
+          _digestBox.length +
+          _entityStatsBox.length,
     };
   }
 
@@ -232,5 +326,6 @@ class CacheService {
     await _newsBox.close();
     await _suggestionsBox.close();
     await _digestBox.close();
+    await _entityStatsBox.close();
   }
 }

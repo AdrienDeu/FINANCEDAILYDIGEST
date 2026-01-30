@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 
 import '../../domain/entities/news_entity.dart';
+import '../models/entity_stats_model.dart';
 import 'exceptions/api_exception.dart';
 import 'http/dio_client.dart';
 import 'secure_storage_service.dart';
@@ -303,6 +304,108 @@ class MarketauxDataSource {
       'relevanceScore': article['relevance_score'] as double?,
       'relatedSymbols': symbols,
     };
+  }
+
+  /// Fetch entity statistics (time series) from Marketaux API
+  ///
+  /// [symbols] - Stock symbols to get stats for
+  /// [startDate] - Start date for the time series
+  /// [endDate] - End date for the time series
+  /// [interval] - Time interval (day, week, month)
+  Future<EntityStatsResponse> fetchEntityStats({
+    required List<String> symbols,
+    required DateTime startDate,
+    required DateTime endDate,
+    String interval = 'day',
+  }) async {
+    try {
+      developer.log(
+          'Fetching entity stats from Marketaux API for ${symbols.join(", ")}...');
+
+      final apiToken = await _secureStorage.getMarketauxApiKey();
+      if (apiToken == null || apiToken.isEmpty) {
+        throw const ClientException(
+          'Clé API Marketaux non configurée. Veuillez la configurer dans les paramètres.',
+          401,
+        );
+      }
+
+      // Format dates for API (YYYY-MM-DDTHH:MM)
+      final publishedAfter =
+          '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}T00:00';
+      final publishedBefore =
+          '${endDate.year}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}T23:59';
+
+      final queryParams = <String, dynamic>{
+        'api_token': apiToken,
+        'symbols': symbols.join(','),
+        'interval': interval,
+        'group_by': 'symbol',
+        'published_after': publishedAfter,
+        'published_before': publishedBefore,
+        'language': 'en',
+        'limit': 100,
+        'sort': 'total_documents',
+        'sort_order': 'desc',
+      };
+
+      final response = await _dioClient.dio.get(
+        '/entity/stats/intraday',
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        developer.log('Fetched entity stats successfully');
+        return EntityStatsResponse.fromJson(data);
+      }
+
+      return EntityStatsResponse(found: 0, returned: 0, limit: 100, data: []);
+    } on DioException catch (e) {
+      developer.log('Marketaux Stats API error: ${e.message}');
+
+      if (e.response?.statusCode == 429) {
+        throw const RateLimitException(
+          'Limite de requêtes Marketaux atteinte. Réessayez plus tard.',
+        );
+      }
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        // Check if it's a plan restriction
+        final errorMsg = e.response?.data?['error']?['message'] as String? ?? '';
+        if (errorMsg.contains('plan') || errorMsg.contains('subscription')) {
+          throw const ClientException(
+            'Cette fonctionnalité nécessite un abonnement Marketaux Standard ou supérieur.',
+            403,
+          );
+        }
+        throw const UnauthorizedException(
+          'Clé API Marketaux invalide ou expirée.',
+        );
+      }
+      if (e.response?.statusCode == 402) {
+        throw const ClientException(
+          'Quota Marketaux dépassé. Vérifiez votre plan.',
+          402,
+        );
+      }
+
+      if (e.error is ApiException) {
+        throw e.error as ApiException;
+      }
+
+      throw NetworkException(
+        'Erreur réseau Marketaux: ${e.message}',
+      );
+    } catch (e) {
+      developer.log('Error fetching Marketaux entity stats: $e');
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ParseException(
+        'Erreur lors de la récupération des statistiques: ${e.toString()}',
+        e,
+      );
+    }
   }
 
   /// Categorize news based on entity types and keywords

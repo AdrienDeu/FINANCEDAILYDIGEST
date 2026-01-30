@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'home_screen.dart';
 import 'news_screen.dart';
+import 'stats_screen.dart';
 
 /// Main screen with bottom navigation bar
 class MainScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     NewsScreen(),
+    StatsScreen(),
   ];
 
   @override
@@ -41,6 +43,10 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.article),
             label: 'Actualités',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'Statistiques',
           ),
         ],
       ),
