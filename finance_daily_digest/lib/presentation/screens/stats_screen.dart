@@ -186,64 +186,127 @@ class StatsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return DraggableScrollableSheet(
-              initialChildSize: 0.6,
-              minChildSize: 0.4,
-              maxChildSize: 0.8,
-              expand: false,
-              builder: (context, scrollController) {
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Sélectionner les symboles',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const Spacer(),
-                          TextButton(
-                            onPressed: () {
-                              ref
-                                  .read(selectedStatsSymbolsProvider.notifier)
-                                  .state = tempSelection;
-                              Navigator.pop(context);
-                            },
-                            child: const Text('Appliquer'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    Expanded(
-                      child: ListView.builder(
-                        controller: scrollController,
-                        itemCount: availableStatsSymbols.length,
-                        itemBuilder: (context, index) {
-                          final symbol = availableStatsSymbols[index];
-                          final isSelected = tempSelection.contains(symbol);
+        return Consumer(
+          builder: (context, ref, _) {
+            final topMoversAsync = ref.watch(topMoversProvider);
 
-                          return CheckboxListTile(
-                            title: Text(symbol),
-                            subtitle: Text(_getSymbolDescription(symbol)),
-                            value: isSelected,
-                            onChanged: (value) {
-                              setState(() {
-                                if (value == true) {
-                                  tempSelection.add(symbol);
-                                } else if (tempSelection.length > 1) {
-                                  tempSelection.remove(symbol);
-                                }
-                              });
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return DraggableScrollableSheet(
+                  initialChildSize: 0.6,
+                  minChildSize: 0.4,
+                  maxChildSize: 0.8,
+                  expand: false,
+                  builder: (context, scrollController) {
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Top Movers du jour',
+                                      style: Theme.of(context).textTheme.titleLarge,
+                                    ),
+                                    Text(
+                                      'Plus grandes variations',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Theme.of(context).colorScheme.outline,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  ref
+                                      .read(selectedStatsSymbolsProvider.notifier)
+                                      .state = tempSelection;
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Appliquer'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        Expanded(
+                          child: topMoversAsync.when(
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            error: (e, _) => Center(
+                              child: Text('Erreur: $e'),
+                            ),
+                            data: (topMovers) {
+                              if (topMovers.isEmpty) {
+                                return const Center(
+                                  child: Text('Aucun top mover disponible'),
+                                );
+                              }
+                              return ListView.builder(
+                                controller: scrollController,
+                                itemCount: topMovers.length,
+                                itemBuilder: (context, index) {
+                                  final mover = topMovers[index];
+                                  final isSelected =
+                                      tempSelection.contains(mover.symbol);
+                                  final changeColor = mover.isGainer
+                                      ? Colors.green
+                                      : Colors.red;
+                                  final changeIcon = mover.isGainer
+                                      ? Icons.trending_up
+                                      : Icons.trending_down;
+
+                                  return CheckboxListTile(
+                                    title: Row(
+                                      children: [
+                                        Text(mover.symbol),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          changeIcon,
+                                          size: 16,
+                                          color: changeColor,
+                                        ),
+                                        Text(
+                                          ' ${mover.changePercent >= 0 ? '+' : ''}${mover.changePercent.toStringAsFixed(2)}%',
+                                          style: TextStyle(
+                                            color: changeColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    subtitle: Text(
+                                      mover.name.isNotEmpty
+                                          ? mover.name
+                                          : mover.symbol,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    value: isSelected,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        if (value == true) {
+                                          tempSelection.add(mover.symbol);
+                                        } else if (tempSelection.length > 1) {
+                                          tempSelection.remove(mover.symbol);
+                                        }
+                                      });
+                                    },
+                                  );
+                                },
+                              );
                             },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
             );
@@ -251,21 +314,6 @@ class StatsScreen extends ConsumerWidget {
         );
       },
     );
-  }
-
-  String _getSymbolDescription(String symbol) {
-    const descriptions = {
-      'AAPL': 'Apple Inc.',
-      'MSFT': 'Microsoft Corporation',
-      'GOOGL': 'Alphabet Inc.',
-      'AMZN': 'Amazon.com Inc.',
-      'NVDA': 'NVIDIA Corporation',
-      'META': 'Meta Platforms Inc.',
-      'TSLA': 'Tesla Inc.',
-      'MC.PA': 'LVMH (Euronext Paris)',
-      'SAP.DE': 'SAP SE (Xetra)',
-    };
-    return descriptions[symbol] ?? symbol;
   }
 
   Widget _buildViewModeToggle(

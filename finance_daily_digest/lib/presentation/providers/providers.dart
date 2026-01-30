@@ -4,6 +4,7 @@ import '../../data/datasources/cache_service.dart';
 import '../../data/datasources/marketaux_datasource.dart';
 import '../../data/datasources/openrouter_datasource.dart';
 import '../../data/datasources/yahoo_finance_datasource.dart';
+export '../../data/datasources/yahoo_finance_datasource.dart' show TopMoverStock;
 import '../../data/repositories/ai_repository_impl.dart';
 import '../../data/repositories/news_repository_impl.dart';
 import '../../domain/entities/daily_digest_entity.dart';
@@ -175,21 +176,19 @@ String _getIndustryApiString(NewsIndustry industry) {
 
 // ==================== STOCK CHART PROVIDERS ====================
 
-/// Available symbols for stats screen
-const List<String> availableStatsSymbols = [
+/// Fallback symbols if top movers fetch fails
+const List<String> fallbackStatsSymbols = [
   'AAPL',
   'MSFT',
   'GOOGL',
-  'AMZN',
   'NVDA',
-  'META',
-  'TSLA',
-  'MC.PA',
-  'SAP.DE',
 ];
 
-/// Default symbols to show on stats screen
-const List<String> defaultStatsSymbols = ['AAPL', 'MSFT', 'GOOGL'];
+/// Provider for fetching top movers (gainers/losers) dynamically
+final topMoversProvider = FutureProvider.autoDispose<List<TopMoverStock>>((ref) async {
+  final dataSource = ref.watch(yahooQuotesDataSourceProvider);
+  return await dataSource.fetchTopMovers(count: 10);
+});
 
 /// State provider for chart period filter
 final chartPeriodProvider = StateProvider<ChartPeriod>((ref) {
@@ -197,8 +196,9 @@ final chartPeriodProvider = StateProvider<ChartPeriod>((ref) {
 });
 
 /// State provider for selected symbols
+/// Initialized empty - will be populated by top movers or fallback
 final selectedStatsSymbolsProvider = StateProvider<List<String>>((ref) {
-  return List.from(defaultStatsSymbols);
+  return <String>[];
 });
 
 /// State provider for chart view mode (price or volume)
@@ -214,13 +214,24 @@ enum ChartViewMode {
 
 /// State provider for stock chart data
 /// Watches period and symbols and fetches data accordingly
+/// If no symbols selected, uses top movers automatically
 final stockChartProvider = FutureProvider.autoDispose<Map<String, StockChartEntity>>((ref) async {
   final useCase = ref.watch(getStockChartUseCaseProvider);
   final period = ref.watch(chartPeriodProvider);
-  final symbols = ref.watch(selectedStatsSymbolsProvider);
+  var symbols = ref.watch(selectedStatsSymbolsProvider);
 
+  // If no symbols selected, fetch top movers dynamically
   if (symbols.isEmpty) {
-    return {};
+    final topMovers = await ref.watch(topMoversProvider.future);
+    if (topMovers.isNotEmpty) {
+      symbols = topMovers.take(4).map((m) => m.symbol).toList();
+      // Update the state provider with the fetched symbols
+      ref.read(selectedStatsSymbolsProvider.notifier).state = symbols;
+    } else {
+      // Fallback to default symbols if top movers fetch fails
+      symbols = fallbackStatsSymbols;
+      ref.read(selectedStatsSymbolsProvider.notifier).state = symbols;
+    }
   }
 
   return await useCase.execute(

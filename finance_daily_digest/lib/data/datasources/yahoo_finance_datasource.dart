@@ -194,6 +194,77 @@ class YahooQuotesDataSource {
     }
   }
 
+  /// Fetch top movers (gainers and losers) from Yahoo Finance screener
+  ///
+  /// Returns a list of symbols sorted by absolute price change percentage
+  /// [count] - Number of top movers to return (default: 10)
+  Future<List<TopMoverStock>> fetchTopMovers({int count = 10}) async {
+    try {
+      developer.log('Fetching top movers from Yahoo Finance...');
+
+      // Fetch both gainers and losers in parallel
+      final results = await Future.wait([
+        _fetchScreener('day_gainers'),
+        _fetchScreener('day_losers'),
+      ]);
+
+      final gainers = results[0];
+      final losers = results[1];
+
+      // Combine and sort by absolute change percentage
+      final allMovers = [...gainers, ...losers];
+      allMovers.sort((a, b) =>
+          b.changePercent.abs().compareTo(a.changePercent.abs()));
+
+      developer.log('Found ${allMovers.length} top movers');
+      return allMovers.take(count).toList();
+    } catch (e) {
+      developer.log('Error fetching top movers: $e');
+      // Return empty list on error, caller can fallback to defaults
+      return [];
+    }
+  }
+
+  /// Fetch stocks from Yahoo Finance screener
+  Future<List<TopMoverStock>> _fetchScreener(String screenerId) async {
+    try {
+      final response = await _dioClient.dio.get(
+        '/v1/finance/screener/predefined/saved',
+        queryParameters: {
+          'scrIds': screenerId,
+          'count': 25,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final finance = data['finance'] as Map<String, dynamic>?;
+        final result = finance?['result'] as List?;
+
+        if (result != null && result.isNotEmpty) {
+          final screenResult = result[0] as Map<String, dynamic>;
+          final quotes = screenResult['quotes'] as List? ?? [];
+
+          return quotes.map((q) {
+            final quote = q as Map<String, dynamic>;
+            return TopMoverStock(
+              symbol: quote['symbol'] as String? ?? '',
+              name: quote['shortName'] as String? ?? quote['longName'] as String? ?? '',
+              price: (quote['regularMarketPrice'] as num?)?.toDouble() ?? 0,
+              changePercent:
+                  (quote['regularMarketChangePercent'] as num?)?.toDouble() ?? 0,
+              volume: (quote['regularMarketVolume'] as num?)?.toInt() ?? 0,
+            );
+          }).where((s) => s.symbol.isNotEmpty).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      developer.log('Screener $screenerId error: $e');
+      return [];
+    }
+  }
+
   /// Fetch chart data for multiple symbols
   Future<Map<String, StockChartResponse>> fetchMultipleCharts({
     required List<String> symbols,
@@ -365,4 +436,24 @@ class StockDataPoint {
 
   /// Is this a positive day (close > open)?
   bool get isPositive => close >= open;
+}
+
+/// Represents a top mover stock (gainer or loser)
+class TopMoverStock {
+  final String symbol;
+  final String name;
+  final double price;
+  final double changePercent;
+  final int volume;
+
+  const TopMoverStock({
+    required this.symbol,
+    required this.name,
+    required this.price,
+    required this.changePercent,
+    required this.volume,
+  });
+
+  bool get isGainer => changePercent > 0;
+  bool get isLoser => changePercent < 0;
 }
